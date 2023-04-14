@@ -25,7 +25,7 @@ public class UserController {
 
     @GetMapping("/login")
     public ResponseEntity<Object> userLogin(@RequestParam("email") String email,
-                            @RequestParam("password") String password) throws FirebaseAuthException {
+                                            @RequestParam("password") String password) throws FirebaseAuthException {
         LoginResponse loginResponse = userService.userLogin(email, password);
         if (loginResponse == null)
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -33,14 +33,22 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String,Object>> userRegister(@RequestBody UserBasicData userBasicData)
+    public ResponseEntity<Map<String, Object>> userRegister(@RequestBody UserBasicData userBasicData)
             throws FirebaseAuthException, ExecutionException, InterruptedException {
         ApiFuture<WriteResult> writeResultApiFuture = userService.addUserData(userBasicData);
-        Map<String,Object> responseBody = new HashMap<>();
+        Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("message", "User registered successfully");
         responseBody.put("user", userBasicData);
         responseBody.put("time", writeResultApiFuture.get().getUpdateTime().toDate());
         responseBody.put("status", HttpStatus.OK);
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
+
+//    @GetMapping("/user/${uid}")
+//    public ResponseEntity<Object> getUserData(@PathVariable("uid") String uid) {
+//        String userRecord = userService.getUserData(uid);
+//        if (userRecord == null)
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        return new ResponseEntity<>(userRecord, HttpStatus.OK);
+//    }
 }

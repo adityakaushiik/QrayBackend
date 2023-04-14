@@ -58,20 +58,18 @@ public class UserService {
     }
 
     //get
-    public String getUserData(String documentId)
-            throws ExecutionException, InterruptedException {
-        DocumentReference documentReference = getUserCollection().document(documentId);
-        ApiFuture<DocumentSnapshot> future = documentReference.get();
-        return Objects.requireNonNull(future.get().getData()).toString();
+    public String getUserData(String documentId) {
+        ApiFuture<DocumentSnapshot> documentReference = getUserCollection().document(documentId).get();
+        return documentReference.toString();
     }
 
     //put
-    public String editUserData(){
+    public String editUserData() {
         return "Data edited successfully";
     }
 
     //delete
-    public String deleteUserData(){
+    public String deleteUserData() {
         return "Data deleted successfully";
     }
 }
