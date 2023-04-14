@@ -4,12 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-
-import java.util.Collections;
 
 @Configuration
 public class SwaggerConfig {
@@ -19,18 +15,21 @@ public class SwaggerConfig {
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.regex("/user/.*"))
-                .build()
-                .apiInfo(apiInfo())
-                .pathMapping("/docs");
+                .build();
     }
 
-    private ApiInfo apiInfo() {
-        return new ApiInfo(
-                "My API",
-                "API description.",
-                "API version",
-                "Terms of service",
-                new Contact("My Name", "www.example.com", "myemail@example.com"),
-                "License of API", "API license URL", Collections.emptyList());
-    }
+//    private ApiInfo apiInfo() {
+//        return new ApiInfo(
+//                "My API",
+//                "API description.",
+//                "API version",
+//                "Terms of service",
+//                new Contact("My Name", "www.example.com", "myemail@example.com"),
+//                "License of API", "API license URL", Collections.emptyList());
+//    }
+
+//    @Override
+//    public void addViewControllers(ViewControllerRegistry registry) {
+//        registry.addRedirectViewController("/myproject", "/");
+//    }
 }
