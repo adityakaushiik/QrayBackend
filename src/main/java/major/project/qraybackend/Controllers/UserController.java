@@ -3,7 +3,6 @@ package major.project.qraybackend.Controllers;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
 import major.project.qraybackend.Entity.LoginResponse;
 import major.project.qraybackend.Entity.UserBasicData;
 import major.project.qraybackend.Services.UserService;
@@ -18,17 +17,20 @@ import java.util.concurrent.ExecutionException;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
-@RequestMapping("user/")
+@RequestMapping("api/user/")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @GetMapping("/login")
     public ResponseEntity<Object> userLogin(@RequestParam("email") String email,
-                                            @RequestParam("password") String password) throws FirebaseAuthException {
+                                            @RequestParam("password") String password)
+            throws FirebaseAuthException {
+
         LoginResponse loginResponse = userService.userLogin(email, password);
         if (loginResponse == null)
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
         return new ResponseEntity<>(loginResponse, HttpStatus.OK);
     }
 

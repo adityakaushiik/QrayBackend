@@ -6,6 +6,7 @@ import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger.web.*;
 
 @Configuration
 public class SwaggerConfig {
@@ -14,22 +15,28 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                 .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.regex("/user/.*"))
+                .paths(PathSelectors.regex("/api/.*"))
                 .build();
     }
 
-//    private ApiInfo apiInfo() {
-//        return new ApiInfo(
-//                "My API",
-//                "API description.",
-//                "API version",
-//                "Terms of service",
-//                new Contact("My Name", "www.example.com", "myemail@example.com"),
-//                "License of API", "API license URL", Collections.emptyList());
-//    }
-
-//    @Override
-//    public void addViewControllers(ViewControllerRegistry registry) {
-//        registry.addRedirectViewController("/myproject", "/");
-//    }
+    @Bean
+    UiConfiguration uiConfig() {
+        return UiConfigurationBuilder.builder()
+                .deepLinking(true)
+                .displayOperationId(false)
+                .defaultModelsExpandDepth(1)
+                .defaultModelExpandDepth(1)
+                .defaultModelRendering(ModelRendering.EXAMPLE)
+                .displayRequestDuration(false)
+                .docExpansion(DocExpansion.NONE)
+                .filter(false)
+                .maxDisplayedTags(null)
+                .operationsSorter(OperationsSorter.ALPHA)
+                .showExtensions(false)
+                .showCommonExtensions(false)
+                .tagsSorter(TagsSorter.ALPHA)
+                .supportedSubmitMethods(UiConfiguration.Constants.DEFAULT_SUBMIT_METHODS)
+                .validatorUrl(null)
+                .build();
+    }
 }

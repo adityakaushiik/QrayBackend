@@ -7,17 +7,17 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import major.project.qraybackend.Entity.LoginResponse;
 import major.project.qraybackend.Entity.UserBasicData;
+import major.project.qraybackend.Entity.UserDocumentReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 @Service
 public class UserService {
-
     @Autowired
     private Firestore firestore;
 
@@ -28,6 +28,8 @@ public class UserService {
     //login
     public LoginResponse userLogin(String email, String password) throws FirebaseAuthException {
         UserRecord userByEmail = FirebaseAuth.getInstance().getUserByEmail(email);
+
+
         //try catch block to auth the password
 
         FirebaseAuth.getInstance().createCustomToken(userByEmail.getUid());
@@ -57,6 +59,15 @@ public class UserService {
         return getUserCollection().document(userRecord.getUid()).set(userData);
     }
 
+    public ApiFuture<WriteResult> addUserDocuments(UserDocumentReference userDocumentReference, String userUid) {
+        return getUserCollection().document(userUid).collection("Documents").document(userDocumentReference.getDocumentType()).set(userDocumentReference);
+    }
+
+    public List<QueryDocumentSnapshot> getAllDocuments(String userId) throws ExecutionException, InterruptedException {
+        ApiFuture<QuerySnapshot> future = getUserCollection().document(userId).collection("Documents").get();
+        return future.get().getDocuments();
+    }
+
     //get
     public String getUserData(String documentId) {
         ApiFuture<DocumentSnapshot> documentReference = getUserCollection().document(documentId).get();
@@ -64,13 +75,15 @@ public class UserService {
     }
 
     //put
-    public String editUserData() {
+    public String editUserData(String documentId, UserBasicData userData) {
+        ApiFuture<WriteResult> writeResult = getUserCollection().document(documentId).set(userData);
         return "Data edited successfully";
     }
 
     //delete
-    public String deleteUserData() {
-        return "Data deleted successfully";
+    public String deleteUserData(String documentId) {
+        ApiFuture<WriteResult> writeResult = getUserCollection().document(documentId).delete();
+        return writeResult.toString();
     }
 }
 
