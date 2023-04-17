@@ -28,10 +28,6 @@ public class UserService {
     //login
     public LoginResponse userLogin(String email, String password) throws FirebaseAuthException {
         UserRecord userByEmail = FirebaseAuth.getInstance().getUserByEmail(email);
-
-
-        //try catch block to auth the password
-
         FirebaseAuth.getInstance().createCustomToken(userByEmail.getUid());
         Map<String, Object> refreshTokenClaims = new HashMap<>();
         refreshTokenClaims.put("refreshToken", true);
@@ -59,8 +55,8 @@ public class UserService {
         return getUserCollection().document(userRecord.getUid()).set(userData);
     }
 
-    public ApiFuture<WriteResult> addUserDocuments(UserDocumentReference userDocumentReference, String userUid) {
-        return getUserCollection().document(userUid).collection("Documents").document(userDocumentReference.getDocumentType()).set(userDocumentReference);
+    public ApiFuture<DocumentReference> addUserDocuments(UserDocumentReference userDocumentReference, String userUid) {
+        return getUserCollection().document(userUid).collection("Documents").add(userDocumentReference);
     }
 
     public List<QueryDocumentSnapshot> getAllDocuments(String userId) throws ExecutionException, InterruptedException {
@@ -68,22 +64,9 @@ public class UserService {
         return future.get().getDocuments();
     }
 
-    //get
-    public String getUserData(String documentId) {
-        ApiFuture<DocumentSnapshot> documentReference = getUserCollection().document(documentId).get();
-        return documentReference.toString();
-    }
-
-    //put
-    public String editUserData(String documentId, UserBasicData userData) {
-        ApiFuture<WriteResult> writeResult = getUserCollection().document(documentId).set(userData);
-        return "Data edited successfully";
-    }
-
-    //delete
-    public String deleteUserData(String documentId) {
-        ApiFuture<WriteResult> writeResult = getUserCollection().document(documentId).delete();
-        return writeResult.toString();
+    public boolean deleteUserDocument(String documentId, String userId) throws ExecutionException, InterruptedException {
+//        System.out.println(getUserCollection().document(userId).collection("Documents").document(documentId).get().get());
+        return getUserCollection().document(userId).collection("Documents").document(documentId).delete().isDone();
     }
 }
 

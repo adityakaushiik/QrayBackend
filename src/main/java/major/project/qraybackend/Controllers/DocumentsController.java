@@ -1,8 +1,8 @@
 package major.project.qraybackend.Controllers;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.WriteResult;
 import io.swagger.annotations.ApiParam;
 import major.project.qraybackend.Entity.UserDocumentReference;
 import major.project.qraybackend.Services.DocumentService;
@@ -33,17 +33,17 @@ public class DocumentsController {
                                                                 @RequestPart("documentType") String documentType,
                                                                 @RequestPart("userId") String userUid) {
         UserDocumentReference userDocumentReference = new UserDocumentReference(documentType, documentService.uploadDocument(document));
-        ApiFuture<WriteResult> writeResultApiFuture = userService.addUserDocuments(userDocumentReference, userUid);
+        ApiFuture<DocumentReference> writeResultApiFuture = userService.addUserDocuments(userDocumentReference, userUid);
         System.out.println(writeResultApiFuture.isDone());
         return ResponseEntity.ok(userDocumentReference);
     }
 
     @GetMapping(value = "/getDocuments/{userId}")
-    public ResponseEntity<Map<String, String>> getDocumentListing(@PathVariable String userId) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Map<String, Object>> getDocumentListing(@PathVariable String userId) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> allDocuments = userService.getAllDocuments(userId);
-        Map<String, String> documentMap = new HashMap<>();
+        Map<String, Object> documentMap = new HashMap<>();
         for (QueryDocumentSnapshot document : allDocuments) {
-            documentMap.put((String) document.get("documentType"), (String) document.get("documentReference"));
+            documentMap.put(document.getId(), document.getData());
         }
         return ResponseEntity.ok(documentMap);
     }
@@ -55,25 +55,22 @@ public class DocumentsController {
     }
 
     @PostMapping(value = "/delete/")
-    public ResponseEntity<String> deleteDocument(@RequestParam("documentReference") String documentReference) {
+    public ResponseEntity<String> deleteDocument(@RequestParam("documentId") String documentId,
+                                                 @RequestParam("userId") String userId,
+                                                 @RequestParam("documentReference") String documentReference) throws ExecutionException, InterruptedException {
         System.out.println("Deleting " + documentReference);
-        if (documentService.deleteDocument(documentReference).equals("Deleted")) {
-            //logic to delete record of the data from the database
-            return ResponseEntity.ok("Deleted");
-        }
+        if (documentService.deleteDocument(documentReference).equals("Deleted"))
+            return ResponseEntity.ok((userService.deleteUserDocument(documentId, userId)) ? "Deleted" : "Error , Document Deleted but Record not deleted");
         return ResponseEntity.ok("Error , Document not deleted");
     }
 
     @PutMapping(value = "/update/")
     public ResponseEntity<String> updateDocument(@RequestPart("documentReference") String documentReference,
-                                                 @RequestPart("documentType") String documentType,
-                                                 @RequestPart("document") @ApiParam(value = "File", required = true) MultipartFile document,
-                                                 @RequestPart("userId") String userId) {
+                                                 @RequestPart("document")
+                                                 @ApiParam(value = "File", required = true) MultipartFile document) {
         System.out.println("Updating " + documentReference);
-        if (documentService.updateDocument(documentReference, documentType, document, userId).equals("Updated")) {
-            //logic to Update record of the data from the database
-            return ResponseEntity.ok("Updated");
-        }
-        return ResponseEntity.ok("Error , Document not updated");
+        documentService.updateDocument(documentReference, document);
+        return ResponseEntity.ok("Updated");
+
     }
 }
