@@ -5,6 +5,9 @@ import com.google.cloud.firestore.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -19,10 +22,11 @@ public class AttendanceService {
 
     //create attendance
     public String createAttendance(String userId) throws ExecutionException, InterruptedException {
-        Object user = new Object();
-        ApiFuture<DocumentReference> attendance =
-                getCollection().document(userId).collection("attendance").add(user);
-        return attendance.get().getId();
+        Map<String, Object> attendance = new HashMap<>();
+        attendance.put("attendance", new ArrayList<>());
+        ApiFuture<DocumentReference> attendanceRecord =
+                getCollection().document(userId).collection("attendance").add(attendance);
+        return attendanceRecord.get().getId();
     }
 
     //delete attendance
@@ -34,11 +38,11 @@ public class AttendanceService {
     }
 
     //mark attendance
-    public boolean markAttendance(String userId, String attendanceId, String attendersId) {
-        ApiFuture<WriteResult> marking = getCollection().document().collection("attendance")
+    public WriteResult markAttendance(String userId, String attendanceId, String attendersId) throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> marking = getCollection().document(userId).collection("attendance")
                 .document(attendanceId)
-                .update("attendance", FieldValue.arrayUnion(userId));
-        return marking.isDone();
+                .update("attendance", FieldValue.arrayUnion(attendersId));
+        return marking.get();
     }
 
     //get attendance

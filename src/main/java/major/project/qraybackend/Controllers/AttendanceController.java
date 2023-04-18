@@ -1,5 +1,6 @@
 package major.project.qraybackend.Controllers;
 
+import com.google.cloud.firestore.WriteResult;
 import major.project.qraybackend.Services.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +34,10 @@ public class AttendanceController {
 
     //mark attendance
     @GetMapping("/mark")
-    public ResponseEntity<Boolean> markAttendance(@RequestParam("userId") String userId,
-                                                  @RequestParam("attendanceId") String attendanceId,
-                                                  @RequestParam("attendersId") String attendersId) {
-        boolean marked = attendanceService.markAttendance(userId, attendanceId, attendersId);
+    public ResponseEntity<WriteResult> markAttendance(@RequestParam("userId") String userId,
+                                                      @RequestParam("attendanceId") String attendanceId,
+                                                      @RequestParam("attendersId") String attendersId) throws ExecutionException, InterruptedException {
+        WriteResult marked = attendanceService.markAttendance(userId, attendanceId, attendersId);
         return ResponseEntity.ok(marked);
     }
 
