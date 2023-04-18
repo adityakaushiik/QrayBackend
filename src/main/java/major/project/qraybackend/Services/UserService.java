@@ -64,9 +64,9 @@ public class UserService {
         return future.get().getDocuments();
     }
 
-    public boolean deleteUserDocument(String documentId, String userId) throws ExecutionException, InterruptedException {
+    public ApiFuture<WriteResult> deleteUserDocument(String documentId, String userId) throws ExecutionException, InterruptedException {
 //        System.out.println(getUserCollection().document(userId).collection("Documents").document(documentId).get().get());
-        return getUserCollection().document(userId).collection("Documents").document(documentId).delete().isDone();
+        return getUserCollection().document(userId).collection("Documents").document(documentId).delete();
     }
 }
 

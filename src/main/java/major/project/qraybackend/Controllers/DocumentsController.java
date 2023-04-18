@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 public class DocumentsController {
     @Autowired
     private DocumentService documentService;
-
     @Autowired
     private UserService userService;
 
@@ -60,7 +59,7 @@ public class DocumentsController {
                                                  @RequestParam("documentReference") String documentReference) throws ExecutionException, InterruptedException {
         System.out.println("Deleting " + documentReference);
         if (documentService.deleteDocument(documentReference).equals("Deleted"))
-            return ResponseEntity.ok((userService.deleteUserDocument(documentId, userId)) ? "Deleted" : "Error , Document Deleted but Record not deleted");
+            return ResponseEntity.ok((userService.deleteUserDocument(documentId, userId).toString()));
         return ResponseEntity.ok("Error , Document not deleted");
     }
 

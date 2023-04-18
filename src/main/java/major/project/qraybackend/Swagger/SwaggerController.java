@@ -1,4 +1,4 @@
-package major.project.qraybackend.Controllers;
+package major.project.qraybackend.Swagger;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

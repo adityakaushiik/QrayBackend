@@ -11,8 +11,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 @SpringBootApplication
-@EnableSwagger2
 public class QrayBackendApplication {
+
     public static void main(String[] args) throws IOException {
 
         FileInputStream refreshToken = new
