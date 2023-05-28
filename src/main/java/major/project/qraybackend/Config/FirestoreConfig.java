@@ -36,8 +36,8 @@ public class FirestoreConfig {
         return FirebaseAuth.getInstance();
     }
 
+}
 //    @Bean
 //    public PasswordEncoder passwordEncoder() {
 //        return new BCryptPasswordEncoder();
 //    }
-}

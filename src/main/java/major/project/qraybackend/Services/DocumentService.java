@@ -22,7 +22,6 @@ public class DocumentService {
     @Autowired
     Storage storage;
 
-
     public String uploadDocument(MultipartFile file) {
         try {
             File tempFile = File.createTempFile(Objects.requireNonNull(file.getOriginalFilename()),

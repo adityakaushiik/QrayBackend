@@ -29,6 +29,7 @@ public class TokenAndPasswordUtil {
     }
 
     public String getUsernameFromToken(String token) {
+        token = token.replace("Bearer ", "");
         Claims claims = Jwts.parser()
                 .setSigningKey(secretKey.getBytes())
                 .parseClaimsJws(token)
@@ -38,6 +39,7 @@ public class TokenAndPasswordUtil {
     }
 
     public boolean validateToken(String token) {
+        token = token.replace("Bearer ", "");
         try {
             Jwts.parser().setSigningKey(secretKey.getBytes()).parseClaimsJws(token);
             return true;
@@ -53,5 +55,4 @@ public class TokenAndPasswordUtil {
     public boolean verifyPassword(String password, String encodedPassword) {
         return passwordEncoder.matches(password, encodedPassword);
     }
-
 }

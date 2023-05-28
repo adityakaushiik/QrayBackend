@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class SwaggerController {
-
     @RequestMapping("/apidoc")
     public String getRedirectUrl() {
         System.out.println("Redirecting to swagger-ui");
