@@ -5,43 +5,70 @@ import com.google.cloud.firestore.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
+import major.project.qraybackend.Config.TokenAndPasswordUtil;
+import major.project.qraybackend.Entity.LoginRequest;
 import major.project.qraybackend.Entity.LoginResponse;
 import major.project.qraybackend.Entity.UserBasicData;
 import major.project.qraybackend.Entity.UserDocumentReference;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
 public class UserService {
     @Autowired
+    private FirebaseAuth firebaseAuth;
+    @Autowired
     private Firestore firestore;
+    @Autowired
+    private TokenAndPasswordUtil tokenAndPasswordUtil;
 
     private CollectionReference getUserCollection() {
         return firestore.collection("users");
     }
 
-    //login
-    public LoginResponse userLogin(String email, String password) throws FirebaseAuthException {
-        UserRecord userByEmail = FirebaseAuth.getInstance().getUserByEmail(email);
-        FirebaseAuth.getInstance().createCustomToken(userByEmail.getUid());
-        Map<String, Object> refreshTokenClaims = new HashMap<>();
-        refreshTokenClaims.put("refreshToken", true);
+    public UserBasicData getUserData(String uid) {
+        DocumentReference docRef = getUserCollection().document(uid);
+        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = docRef.get();
 
-        return new LoginResponse(userByEmail.getUid(),
-                userByEmail.getEmail(),
-                userByEmail.getDisplayName(),
-                FirebaseAuth.getInstance().createCustomToken(userByEmail.getUid()),
-                FirebaseAuth.getInstance().createCustomToken(userByEmail.getUid(), refreshTokenClaims));
+        try {
+            return documentSnapshotApiFuture.get().toObject(UserBasicData.class);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    //post
-    public ApiFuture<WriteResult> addUserData(UserBasicData userData)
-            throws FirebaseAuthException {
+
+    //login
+    public ResponseEntity<Object> userLogin(LoginRequest request) throws FirebaseAuthException {
+        UserRecord userDetails = firebaseAuth.getUserByEmail(request.getEmail());
+        UserBasicData userBasicData = getUserData(userDetails.getUid());
+
+        if (tokenAndPasswordUtil.verifyPassword(request.getPassword(), userBasicData.getPassword())) {
+
+            final String token = tokenAndPasswordUtil.generateToken(userDetails.getUid());
+
+            LoginResponse loginResponse = new LoginResponse(
+                    userDetails.getUid(),
+                    userDetails.getEmail(),
+                    userDetails.getDisplayName(),
+                    token
+            );
+
+            return ResponseEntity.ok(loginResponse);
+        } else
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    }
+
+    //register
+    public ApiFuture<WriteResult> addUserData(UserBasicData userData) throws FirebaseAuthException {
+
+        userData.setPassword(tokenAndPasswordUtil.encodePassword(userData.getPassword()));
 
         UserRecord.CreateRequest request = new UserRecord.CreateRequest()
                 .setEmail(userData.getEmail())
@@ -50,8 +77,7 @@ public class UserService {
                 .setDisplayName(userData.getFirstName() + " " + userData.getLastName())
                 .setDisabled(false);
 
-        UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
-
+        UserRecord userRecord = firebaseAuth.createUser(request);
         return getUserCollection().document(userRecord.getUid()).set(userData);
     }
 
@@ -69,3 +95,16 @@ public class UserService {
     }
 }
 
+//        try {
+//            UserRecord userByEmail = FirebaseAuth.getInstance().getUserByEmail(request.getEmail());
+//            String authToken = firebaseAuthService.generateAuthToken(request.getEmail(), request.getPassword());
+//
+//
+//            return ResponseEntity.ok(new LoginResponse(userByEmail.getUid(),
+//                    userByEmail.getEmail(),
+//                    userByEmail.getDisplayName(),
+//                    authToken));
+//
+//        } catch (FirebaseAuthException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+//        }

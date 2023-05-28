@@ -3,7 +3,7 @@ package major.project.qraybackend.Controllers;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.auth.FirebaseAuthException;
-import major.project.qraybackend.Entity.LoginResponse;
+import major.project.qraybackend.Entity.LoginRequest;
 import major.project.qraybackend.Entity.UserBasicData;
 import major.project.qraybackend.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,27 +22,25 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/login")
-    public ResponseEntity<Object> userLogin(@RequestParam("email") String email,
-                                            @RequestParam("password") String password)
-            throws FirebaseAuthException {
-
-        LoginResponse loginResponse = userService.userLogin(email, password);
-        if (loginResponse == null)
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-
-        return new ResponseEntity<>(loginResponse, HttpStatus.OK);
+    @PostMapping("/login")
+    public ResponseEntity<Object> userLogin(@RequestBody LoginRequest loginRequest) throws ExecutionException, FirebaseAuthException, InterruptedException {
+        System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
+        return userService.userLogin(loginRequest);
     }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> userRegister(@RequestBody UserBasicData userBasicData)
             throws FirebaseAuthException, ExecutionException, InterruptedException {
+        System.out.println(userBasicData.getEmail() + " " + userBasicData.getPassword());
+
         ApiFuture<WriteResult> writeResultApiFuture = userService.addUserData(userBasicData);
+
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("message", "User registered successfully");
         responseBody.put("user", userBasicData);
         responseBody.put("time", writeResultApiFuture.get().getUpdateTime().toDate());
         responseBody.put("status", HttpStatus.OK);
+
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
