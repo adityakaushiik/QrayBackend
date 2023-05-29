@@ -1,4 +1,4 @@
-package major.project.qraybackend.Config;
+package major.project.qraybackend.Controllers;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -16,6 +16,11 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // Extract the access token from the request (e.g., from headers or query parameters)
         String accessToken = request.getHeader("Authorization");
+
+        if (accessToken == null) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing access token");
+            return false;
+        }
 
         // Validate the access token
         boolean isValid = validateToken(accessToken);

@@ -3,9 +3,9 @@ package major.project.qraybackend.Controllers;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.WriteResult;
 import io.swagger.annotations.ApiParam;
-import major.project.qraybackend.Config.TokenAndPasswordUtil;
-import major.project.qraybackend.Entity.UserDocumentReference;
+import major.project.qraybackend.Models.UserDocumentReference;
 import major.project.qraybackend.Services.DocumentService;
 import major.project.qraybackend.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,22 +20,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-@CrossOrigin(origins = "http://localhost:8080")
+
 @RestController
 @RequestMapping("api/documents/")
+@CrossOrigin()
 public class DocumentsController {
     @Autowired
     private DocumentService documentService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private TokenAndPasswordUtil tokenAndPasswordUtil;
 
     @PostMapping(value = "/upload", consumes = {"multipart/form-data"})
     public ResponseEntity<Object> uploadDocument(HttpServletRequest request,
                                                  @RequestPart("document") @ApiParam(value = "File", required = true) MultipartFile document,
                                                  @RequestPart("documentType") String documentType) {
-
         System.out.println(request.getAttribute("uid").toString());
         UserDocumentReference userDocumentReference = new UserDocumentReference(documentType, documentService.uploadDocument(document));
         ApiFuture<DocumentReference> writeResultApiFuture = userService.addUserDocuments(userDocumentReference, request.getAttribute("uid").toString());
@@ -44,9 +42,7 @@ public class DocumentsController {
     }
 
     @GetMapping(value = "/getDocuments")
-    public ResponseEntity<Map<String, Object>> getDocumentListing(
-            HttpServletRequest request) throws ExecutionException, InterruptedException {
-
+    public ResponseEntity<Map<String, Object>> getDocumentListing(HttpServletRequest request) throws ExecutionException, InterruptedException {
         List<QueryDocumentSnapshot> allDocuments = userService.getAllDocuments(request.getAttribute("uid").toString());
         Map<String, Object> documentMap = new HashMap<>();
         for (QueryDocumentSnapshot document : allDocuments) {
@@ -64,17 +60,18 @@ public class DocumentsController {
     public ResponseEntity<String> deleteDocument(HttpServletRequest request,
                                                  @RequestParam("documentId") String documentId,
                                                  @RequestParam("documentReference") String documentReference) {
-        if (documentService.deleteDocument(documentReference).equals("Deleted"))
-            return ResponseEntity.ok((userService.deleteUserDocument(documentId, request.getAttribute("uid").toString()).toString()));
+        if (documentService.deleteDocument(documentReference).equals("Deleted")) {
+            ApiFuture<WriteResult> writeResultApiFuture = userService.deleteUserDocument(documentId, request.getAttribute("uid").toString());
+            return ResponseEntity.ok("Document deleted");
+
+        }
         return ResponseEntity.ok("Error , Document not deleted");
     }
 
     @PutMapping(value = "/update/")
-    public ResponseEntity<String> updateDocument(@RequestPart("documentReference") String documentReference,
-                                                 @RequestPart("document")
-                                                 @ApiParam(value = "File", required = true) MultipartFile document) {
+    public ResponseEntity<String> updateDocument(@RequestPart("documentReference") String documentReference, @RequestPart("document") @ApiParam(value = "File", required = true) MultipartFile document) {
         documentService.updateDocument(documentReference, document);
-        return ResponseEntity.ok("Updated");
+        return ResponseEntity.ok("Document Updated");
     }
 }
 

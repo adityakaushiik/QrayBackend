@@ -3,8 +3,8 @@ package major.project.qraybackend.Controllers;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.auth.FirebaseAuthException;
-import major.project.qraybackend.Entity.LoginRequest;
-import major.project.qraybackend.Entity.UserBasicData;
+import major.project.qraybackend.Models.LoginRequest;
+import major.project.qraybackend.Models.UserBasicData;
 import major.project.qraybackend.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,9 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-@CrossOrigin(origins = "http://localhost:4200")
+
 @RestController
 @RequestMapping("api/user/")
+@CrossOrigin()
 public class UserController {
     @Autowired
     private UserService userService;

@@ -59,7 +59,6 @@ public class DocumentService {
 
     public String deleteDocument(String documentReference) {
         boolean delete = storage.delete("q-ray-78930.appspot.com", documentReference);
-        System.out.println(delete);
         if (!delete)
             return "Not Found";
         return "Deleted";

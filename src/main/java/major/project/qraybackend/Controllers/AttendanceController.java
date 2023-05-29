@@ -7,11 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("api/attendance/")
+@CrossOrigin()
 public class AttendanceController {
     @Autowired
     private AttendanceService attendanceService;
@@ -26,37 +28,40 @@ public class AttendanceController {
 
     //delete attendance
     @GetMapping("/delete")
-    public ResponseEntity<Boolean> deleteAttendance(HttpServletRequest request,
-                                                    @RequestParam("attendanceId") String attendanceId) {
+    public ResponseEntity<Object> deleteAttendance(HttpServletRequest request,
+                                                   @RequestParam("attendanceId") String attendanceId) {
         boolean deleted = attendanceService.deleteAttendance(request.getAttribute("uid").toString(), attendanceId);
-        return ResponseEntity.ok(deleted);
+        return ResponseEntity.ok("Deleted Successfully");
     }
 
     //mark attendance
     @GetMapping("/mark")
-    public ResponseEntity<WriteResult> markAttendance(HttpServletRequest request,
-                                                      @RequestParam("attendanceId") String attendanceId,
-                                                      @RequestParam("attendersId") String attendersId) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
+                                                              @RequestParam("attendanceId") String attendanceId,
+                                                              @RequestParam("attendersId") String attendersId) throws ExecutionException, InterruptedException {
         WriteResult marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), attendanceId, attendersId);
-        return ResponseEntity.ok(marked);
+        return ResponseEntity.ok(Map.of(
+                "message", "Marked Successfully",
+                "writeResult", marked));
     }
 
     //get attendance
     @GetMapping("/get")
-    public ResponseEntity<Object> getAttendance(HttpServletRequest request,
-                                                @RequestParam("attendanceId") String attendanceId)
-            throws ExecutionException, InterruptedException {
-        Object attendance = attendanceService.getAttendance(request.getAttribute("uid").toString(), attendanceId);
+    public ResponseEntity<List<Map<String, Object>>> getAttendance(HttpServletRequest request,
+                                                                   @RequestParam(value = "attendanceId", required = false) String attendanceId) throws ExecutionException, InterruptedException {
+
+        List<Map<String, Object>> attendance = attendanceService.getAttendance(request.getAttribute("uid").toString(), attendanceId);
+
         return ResponseEntity.ok(attendance);
     }
 
     //remove attendance
     @GetMapping("/remove")
-    public ResponseEntity<Boolean> removeAttendance(HttpServletRequest request,
-                                                    @RequestParam("attendanceId") String attendanceId,
-                                                    @RequestParam("attendersId") String attendersId) {
-        boolean removed = attendanceService.removeAttendance(request.getAttribute("uid").toString(), attendanceId, attendersId);
-        return ResponseEntity.ok(removed);
+    public ResponseEntity<Object> removeAttendance(HttpServletRequest request,
+                                                   @RequestParam("attendanceId") String attendanceId,
+                                                   @RequestParam("attendersId") String attendersId) {
+        attendanceService.removeAttendance(request.getAttribute("uid").toString(), attendanceId, attendersId);
+        return ResponseEntity.ok("Removed Successfully");
     }
 
     //get attendance by date

@@ -1,4 +1,4 @@
-package major.project.qraybackend.Entity;
+package major.project.qraybackend.Models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

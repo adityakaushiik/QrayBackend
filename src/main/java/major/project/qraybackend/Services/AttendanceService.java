@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -26,6 +27,7 @@ public class AttendanceService {
         attendance.put("attendance", new ArrayList<>());
         ApiFuture<DocumentReference> attendanceRecord =
                 getCollection().document(userId).collection("attendance").add(attendance);
+
         return attendanceRecord.get().getId();
     }
 
@@ -46,11 +48,23 @@ public class AttendanceService {
     }
 
     //get attendance
-    public Object getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
+    public List<Map<String, Object>> getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
+        List<Map<String, Object>> attendanceList = new ArrayList<>();
+        if (attendanceId == null) {
+            List<QueryDocumentSnapshot> attendance = getCollection().document(userId).collection("attendance")
+                    .get().get().getDocuments();
+
+            for (QueryDocumentSnapshot documentSnapshot : attendance)
+                attendanceList.add(Map.of(documentSnapshot.getId(), documentSnapshot.getData().get("attendance")));
+
+            return attendanceList;
+        }
+
         ApiFuture<DocumentSnapshot> attendance = getCollection().document(userId).collection("attendance")
                 .document(attendanceId)
                 .get();
-        return attendance.get().getData();
+        attendanceList.add(Map.of(attendance.get().getId(), attendance.get().getData().get("attendance")));
+        return attendanceList;
     }
 
     //remove attendance

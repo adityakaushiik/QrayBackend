@@ -1,4 +1,4 @@
-package major.project.qraybackend.Config;
+package major.project.qraybackend.Utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
