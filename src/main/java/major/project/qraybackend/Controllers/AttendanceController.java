@@ -1,6 +1,7 @@
 package major.project.qraybackend.Controllers;
 
 import com.google.cloud.firestore.WriteResult;
+import major.project.qraybackend.Models.MarkAttendance;
 import major.project.qraybackend.Services.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/attendance/")
-@CrossOrigin()
+@CrossOrigin("http://localhost:4200/")
 public class AttendanceController {
     @Autowired
     private AttendanceService attendanceService;
@@ -27,7 +28,7 @@ public class AttendanceController {
     }
 
     //delete attendance
-    @GetMapping("/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<Object> deleteAttendance(HttpServletRequest request,
                                                    @RequestParam("attendanceId") String attendanceId) {
         boolean deleted = attendanceService.deleteAttendance(request.getAttribute("uid").toString(), attendanceId);
@@ -35,11 +36,13 @@ public class AttendanceController {
     }
 
     //mark attendance
-    @GetMapping("/mark")
+    @PostMapping("/mark")
     public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
-                                                              @RequestParam("attendanceId") String attendanceId,
-                                                              @RequestParam("attendersId") String attendersId) throws ExecutionException, InterruptedException {
-        WriteResult marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), attendanceId, attendersId);
+                                                              @RequestBody MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
+
+
+        WriteResult marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), markAttendance);
+
         return ResponseEntity.ok(Map.of(
                 "message", "Marked Successfully",
                 "writeResult", marked));
@@ -56,7 +59,7 @@ public class AttendanceController {
     }
 
     //remove attendance
-    @GetMapping("/remove")
+    @DeleteMapping("/remove")
     public ResponseEntity<Object> removeAttendance(HttpServletRequest request,
                                                    @RequestParam("attendanceId") String attendanceId,
                                                    @RequestParam("attendersId") String attendersId) {

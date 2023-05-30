@@ -45,8 +45,14 @@ public class UserService {
 
 
     //login
-    public ResponseEntity<Object> userLogin(LoginRequest request) throws FirebaseAuthException {
-        UserRecord userDetails = firebaseAuth.getUserByEmail(request.getEmail());
+    public ResponseEntity<Object> userLogin(LoginRequest request) {
+        UserRecord userDetails;
+        try {
+            userDetails = firebaseAuth.getUserByEmail(request.getEmail());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
         UserBasicData userBasicData = getUserData(userDetails.getUid());
 
         if (tokenAndPasswordUtil.verifyPassword(request.getPassword(), userBasicData.getPassword())) {

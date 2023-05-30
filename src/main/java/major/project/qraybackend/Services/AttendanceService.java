@@ -2,9 +2,12 @@ package major.project.qraybackend.Services;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
+import major.project.qraybackend.Models.MarkAttendance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class AttendanceService {
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     @Autowired
     private Firestore firestore;
 
@@ -40,30 +44,31 @@ public class AttendanceService {
     }
 
     //mark attendance
-    public WriteResult markAttendance(String userId, String attendanceId, String attendersId) throws ExecutionException, InterruptedException {
+    public WriteResult markAttendance(String userId, MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
+        String info = LocalDateTime.now().format(formatter) + "||" + markAttendance.getDisplayName() + "||" + markAttendance.getEmail();
+
         ApiFuture<WriteResult> marking = getCollection().document(userId).collection("attendance")
-                .document(attendanceId)
-                .update("attendance", FieldValue.arrayUnion(attendersId));
+                .document(markAttendance.getAttendanceId())
+                .update(markAttendance.getAttendersId(), info);
+
         return marking.get();
     }
 
     //get attendance
     public List<Map<String, Object>> getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
         List<Map<String, Object>> attendanceList = new ArrayList<>();
+
         if (attendanceId == null) {
-            List<QueryDocumentSnapshot> attendance = getCollection().document(userId).collection("attendance")
-                    .get().get().getDocuments();
-
+            List<QueryDocumentSnapshot> attendance = getCollection().document(userId).collection("attendance").get().get().getDocuments();
             for (QueryDocumentSnapshot documentSnapshot : attendance)
-                attendanceList.add(Map.of(documentSnapshot.getId(), documentSnapshot.getData().get("attendance")));
-
-            return attendanceList;
+                attendanceList.add(Map.of(documentSnapshot.getId(), documentSnapshot.getData()));
+        } else {
+            ApiFuture<DocumentSnapshot> attendance = getCollection().document(userId).collection("attendance")
+                    .document(attendanceId)
+                    .get();
+            attendanceList.add(Map.of(attendance.get().getId(), attendance.get().getData()));
         }
 
-        ApiFuture<DocumentSnapshot> attendance = getCollection().document(userId).collection("attendance")
-                .document(attendanceId)
-                .get();
-        attendanceList.add(Map.of(attendance.get().getId(), attendance.get().getData().get("attendance")));
         return attendanceList;
     }
 

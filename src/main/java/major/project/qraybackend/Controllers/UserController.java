@@ -18,13 +18,13 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/user/")
-@CrossOrigin()
+@CrossOrigin("http://localhost:4200/")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<Object> userLogin(@RequestBody LoginRequest loginRequest) throws ExecutionException, FirebaseAuthException, InterruptedException {
+    public ResponseEntity<Object> userLogin(@RequestBody LoginRequest loginRequest) throws FirebaseAuthException {
         System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
         return userService.userLogin(loginRequest);
     }

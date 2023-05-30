@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/documents/")
-@CrossOrigin()
+@CrossOrigin("http://localhost:4200/")
 public class DocumentsController {
     @Autowired
     private DocumentService documentService;
@@ -56,7 +56,7 @@ public class DocumentsController {
         return ResponseEntity.ok(documentService.downloadDocument(documentReference));
     }
 
-    @PostMapping(value = "/delete/")
+    @DeleteMapping(value = "/delete/")
     public ResponseEntity<String> deleteDocument(HttpServletRequest request,
                                                  @RequestParam("documentId") String documentId,
                                                  @RequestParam("documentReference") String documentReference) {
