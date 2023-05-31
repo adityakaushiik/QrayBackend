@@ -20,26 +20,29 @@ public class AttendanceController {
 
     //create attendance
     @GetMapping("/create")
-    public ResponseEntity<String> createAttendance(HttpServletRequest request)
+    public ResponseEntity<Object> createAttendance(HttpServletRequest request)
             throws InterruptedException, ExecutionException {
         String attendanceId = attendanceService.createAttendance(request.getAttribute("uid").toString());
-        return ResponseEntity.ok(attendanceId);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Created Successfully",
+                "attendanceId", attendanceId));
     }
 
     //delete attendance
     @DeleteMapping("/delete")
-    public ResponseEntity<Object> deleteAttendance(HttpServletRequest request,
-                                                   @RequestParam("attendanceId") String attendanceId) {
+    public ResponseEntity<Object> deleteAttendance(HttpServletRequest request, @RequestParam("attendanceId") String attendanceId) throws ExecutionException, InterruptedException {
         boolean deleted = attendanceService.deleteAttendance(request.getAttribute("uid").toString(), attendanceId);
-        return ResponseEntity.ok("Deleted Successfully");
+        return ResponseEntity.ok(Map.of(
+                "message", "Deleted Successfully",
+                "writeResult", deleted)
+        );
     }
 
     //mark attendance
     @PostMapping("/mark")
     public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
                                                               @RequestBody MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
-
-
         boolean marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), markAttendance);
 
         return ResponseEntity.ok(Map.of(
@@ -61,8 +64,8 @@ public class AttendanceController {
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeAttendance(HttpServletRequest request,
                                                    @RequestParam("attendanceId") String attendanceId,
-                                                   @RequestParam("attendersId") String attendersId) {
-        attendanceService.removeAttendance(request.getAttribute("uid").toString(), attendanceId, attendersId);
+                                                   @RequestParam("recordId") String recordId) {
+        attendanceService.removeAttendance(request.getAttribute("uid").toString(), attendanceId, recordId);
         return ResponseEntity.ok("Removed Successfully");
     }
 

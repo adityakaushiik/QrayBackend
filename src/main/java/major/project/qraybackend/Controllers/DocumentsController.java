@@ -2,7 +2,6 @@ package major.project.qraybackend.Controllers;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.WriteResult;
 import io.swagger.annotations.ApiParam;
 import major.project.qraybackend.Models.UserDocumentReference;
@@ -15,9 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 
@@ -42,13 +39,10 @@ public class DocumentsController {
     }
 
     @GetMapping(value = "/getDocuments")
-    public ResponseEntity<Map<String, Object>> getDocumentListing(HttpServletRequest request) throws ExecutionException, InterruptedException {
-        List<QueryDocumentSnapshot> allDocuments = userService.getAllDocuments(request.getAttribute("uid").toString());
-        Map<String, Object> documentMap = new HashMap<>();
-        for (QueryDocumentSnapshot document : allDocuments) {
-            documentMap.put(document.getId(), document.getData());
-        }
-        return ResponseEntity.ok(documentMap);
+    public ResponseEntity<List<Object>> getDocumentListing(HttpServletRequest request)
+            throws ExecutionException, InterruptedException {
+
+        return ResponseEntity.ok(userService.getAllDocuments(String.valueOf(request.getAttribute("uid"))));
     }
 
     @PostMapping(value = "/download/")
@@ -63,7 +57,6 @@ public class DocumentsController {
         if (documentService.deleteDocument(documentReference).equals("Deleted")) {
             ApiFuture<WriteResult> writeResultApiFuture = userService.deleteUserDocument(documentId, request.getAttribute("uid").toString());
             return ResponseEntity.ok("Document deleted");
-
         }
         return ResponseEntity.ok("Error , Document not deleted");
     }

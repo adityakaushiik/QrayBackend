@@ -1,7 +1,10 @@
 package major.project.qraybackend.Services;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.*;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
 import major.project.qraybackend.Models.MarkAttendance;
 import major.project.qraybackend.Models.SaveAttendance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +43,9 @@ public class AttendanceService {
     }
 
     //delete attendance
-    public boolean deleteAttendance(String userId, String attendanceId) {
+    public boolean deleteAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> deleting = getCollection().document(userId).collection("attendance")
-                .document(attendanceId)
-                .delete();
+                .document(attendanceId).delete();
 
         return deleting.isDone();
     }
@@ -195,10 +197,10 @@ public class AttendanceService {
 //    }
 
     //remove attendance
-    public boolean removeAttendance(String userId, String attendanceId, String attendersId) {
+    public boolean removeAttendance(String userId, String attendanceId, String recordId) {
         ApiFuture<WriteResult> removing = getCollection().document(userId).collection("attendance")
                 .document(attendanceId)
-                .update("attendance", FieldValue.arrayRemove(attendersId));
+                .collection("attenders").document(recordId).delete();
         return removing.isDone();
     }
 

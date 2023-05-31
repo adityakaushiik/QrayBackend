@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -91,9 +92,17 @@ public class UserService {
         return getUserCollection().document(userUid).collection("Documents").add(userDocumentReference);
     }
 
-    public List<QueryDocumentSnapshot> getAllDocuments(String userId) throws ExecutionException, InterruptedException {
-        ApiFuture<QuerySnapshot> future = getUserCollection().document(userId).collection("Documents").get();
-        return future.get().getDocuments();
+    public List<Object> getAllDocuments(String userId) throws ExecutionException, InterruptedException {
+        List<Object> list = new ArrayList<>();
+        getUserCollection().document(userId).collection("Documents").get().get().getDocuments().forEach(
+                documentSnapshot -> {
+                    var data = documentSnapshot.getData();
+                    data.put("documentId", documentSnapshot.getId());
+                    list.add(data);
+                }
+        );
+
+        return list;
     }
 
     public ApiFuture<WriteResult> deleteUserDocument(String documentId, String userId) {
