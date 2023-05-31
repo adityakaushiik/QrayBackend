@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/documents/")
-@CrossOrigin("http://localhost:4200/")
+//@CrossOrigin(origins = "http://localhost:4200")
 public class DocumentsController {
     @Autowired
     private DocumentService documentService;

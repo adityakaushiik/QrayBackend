@@ -69,15 +69,16 @@ public class AttendanceService {
     public List<Map<String, Object>> getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
         List<Map<String, Object>> attendanceList = new ArrayList<>();
 
-        if (attendanceId == null) {
+        if (attendanceId == null || attendanceId.equals("0")) {
             CollectionReference collectionReference = getCollection().document(userId).collection("attendance");
 
             for (var item : collectionReference.get().get().getDocuments()) {
                 var itemData = item.getData();
+                itemData.put("id", item.getId());
                 var attendersTotal = item.getReference().collection("attenders").get().get().size();
                 itemData.put("totalAttenders", attendersTotal);
 
-                attendanceList.add(Map.of(item.getId(), itemData));
+                attendanceList.add(itemData);
             }
         } else {
             getCollection().document(userId).collection("attendance")

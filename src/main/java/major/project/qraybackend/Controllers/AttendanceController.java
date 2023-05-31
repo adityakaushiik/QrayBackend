@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/attendance/")
-@CrossOrigin("http://localhost:4200/")
+//@CrossOrigin
 public class AttendanceController {
     @Autowired
     private AttendanceService attendanceService;
