@@ -88,7 +88,8 @@ public class AttendanceService {
                     .getDocuments()
                     .forEach(item -> {
                         var itemData = item.getData();
-                        attendanceList.add(Map.of(item.getId(), itemData));
+                        itemData.put("recordId", item.getId());
+                        attendanceList.add(itemData);
                     });
         }
         return attendanceList;
