@@ -1,6 +1,5 @@
 package major.project.qraybackend.Controllers;
 
-import com.google.cloud.firestore.WriteResult;
 import major.project.qraybackend.Models.MarkAttendance;
 import major.project.qraybackend.Services.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class AttendanceController {
                                                               @RequestBody MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
 
 
-        WriteResult marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), markAttendance);
+        boolean marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), markAttendance);
 
         return ResponseEntity.ok(Map.of(
                 "message", "Marked Successfully",
