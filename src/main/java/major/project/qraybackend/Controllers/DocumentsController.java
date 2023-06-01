@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/documents/")
-//@CrossOrigin(origins = "http://localhost:4200")
 public class DocumentsController {
     @Autowired
     private DocumentService documentService;
@@ -47,7 +46,7 @@ public class DocumentsController {
     }
 
     @PostMapping(value = "/download/")
-    public ResponseEntity<URL> getDocument(@RequestParam("documentReference") String documentReference) {
+    public ResponseEntity<URL> getDocument(@RequestBody String documentReference) {
         return ResponseEntity.ok(documentService.downloadDocument(documentReference));
     }
 

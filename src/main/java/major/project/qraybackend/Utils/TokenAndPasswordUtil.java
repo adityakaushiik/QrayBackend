@@ -23,7 +23,7 @@ public class TokenAndPasswordUtil {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // Token expires in 24 hours
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000 * 4)) // Token expires in 4 days
                 .signWith(SignatureAlgorithm.HS256, key)
                 .compact();
     }

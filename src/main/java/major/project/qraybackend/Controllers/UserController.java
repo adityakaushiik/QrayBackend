@@ -21,13 +21,12 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/user/")
-//@CrossOrigin
 public class UserController {
     @Autowired
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<Object> userLogin(@RequestBody LoginRequest loginRequest) throws FirebaseAuthException {
+    public ResponseEntity<Object> userLogin(@RequestBody LoginRequest loginRequest) {
         System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
         return userService.userLogin(loginRequest);
     }
@@ -47,4 +46,7 @@ public class UserController {
 
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
+
+//    @PostMapping("/update")
+//    @GetMapping("/getBasicData")
 }
