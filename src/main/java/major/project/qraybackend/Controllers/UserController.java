@@ -47,12 +47,4 @@ public class UserController {
 
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
-
-//    @GetMapping("/user/${uid}")
-//    public ResponseEntity<Object> getUserData(@PathVariable("uid") String uid) {
-//        String userRecord = userService.getUserData(uid);
-//        if (userRecord == null)
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        return new ResponseEntity<>(userRecord, HttpStatus.OK);
-//    }
 }

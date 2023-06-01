@@ -8,6 +8,7 @@ import major.project.qraybackend.Models.UserDocumentReference;
 import major.project.qraybackend.Services.DocumentService;
 import major.project.qraybackend.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,6 +66,11 @@ public class DocumentsController {
     public ResponseEntity<String> updateDocument(@RequestPart("documentReference") String documentReference, @RequestPart("document") @ApiParam(value = "File", required = true) MultipartFile document) {
         documentService.updateDocument(documentReference, document);
         return ResponseEntity.ok("Document Updated");
+    }
+
+    @GetMapping("/userDetails")
+    public ResponseEntity<Object> getUserData(HttpServletRequest request) {
+        return new ResponseEntity<>(userService.getUserBasicData(request.getAttribute("uid").toString()), HttpStatus.OK);
     }
 }
 

@@ -17,4 +17,7 @@ public class UserBasicData {
     String email;
     String password;
     String phoneNumber;
+//    String collegeEnrollmentNumber;
+//    String fathersName;
+//    String mothersName;
 }

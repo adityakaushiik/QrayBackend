@@ -108,6 +108,20 @@ public class UserService {
     public ApiFuture<WriteResult> deleteUserDocument(String documentId, String userId) {
         return getUserCollection().document(userId).collection("Documents").document(documentId).delete();
     }
+
+    public Object getUserBasicData(String uid) {
+        DocumentReference docRef = getUserCollection().document(uid);
+        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = docRef.get();
+
+        try {
+            var user = documentSnapshotApiFuture.get().getData();
+            user.remove("password");
+            return user;
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
 
 //        try {

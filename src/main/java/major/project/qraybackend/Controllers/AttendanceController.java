@@ -38,7 +38,7 @@ public class AttendanceController {
                 "writeResult", deleted)
         );
     }
-
+    
     //mark attendance
     @PostMapping("/mark")
     public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
