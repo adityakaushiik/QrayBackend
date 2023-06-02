@@ -22,9 +22,9 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // Validate the access token
         boolean isValid = validateToken(accessToken);
 
+        // Validate the access token
         if (isValid) {
             request.setAttribute("uid", getUsernameFromToken(accessToken));
             return true;

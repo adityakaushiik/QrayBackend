@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -32,7 +33,19 @@ public class UserService {
         return firestore.collection("users");
     }
 
-    public UserBasicData getUserData(String uid) {
+    private Map<String, Object> getUserDataMap(String uid) {
+        DocumentReference docRef = getUserCollection().document(uid);
+        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = docRef.get();
+
+        try {
+            return documentSnapshotApiFuture.get().getData();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private UserBasicData getUserData(String uid) {
         DocumentReference docRef = getUserCollection().document(uid);
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = docRef.get();
 
@@ -54,10 +67,10 @@ public class UserService {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
+
         UserBasicData userBasicData = getUserData(userDetails.getUid());
 
         if (tokenAndPasswordUtil.verifyPassword(request.getPassword(), userBasicData.getPassword())) {
-
             final String token = tokenAndPasswordUtil.generateToken(userDetails.getUid());
 
             LoginResponse loginResponse = new LoginResponse(
@@ -88,6 +101,19 @@ public class UserService {
         return getUserCollection().document(userRecord.getUid()).set(userData);
     }
 
+    public Object userBasicDataWithoutPassword(String uid) {
+        Map<String, Object> userDataMap = getUserDataMap(uid);
+        userDataMap.remove("password");
+        return userDataMap;
+    }
+
+    public boolean updateUserBasicData(Map<String, Object> updateData, String uid) {
+        ApiFuture<WriteResult> update = getUserCollection().document(uid).update(updateData);
+        return update.isDone();
+    }
+
+
+    ///////////////////////////////for documents
     public ApiFuture<DocumentReference> addUserDocuments(UserDocumentReference userDocumentReference, String userUid) {
         return getUserCollection().document(userUid).collection("Documents").add(userDocumentReference);
     }
@@ -108,32 +134,4 @@ public class UserService {
     public ApiFuture<WriteResult> deleteUserDocument(String documentId, String userId) {
         return getUserCollection().document(userId).collection("Documents").document(documentId).delete();
     }
-
-    public Object getUserBasicData(String uid) {
-        DocumentReference docRef = getUserCollection().document(uid);
-        ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = docRef.get();
-
-        try {
-            var user = documentSnapshotApiFuture.get().getData();
-            user.remove("password");
-            return user;
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 }
-
-//        try {
-//            UserRecord userByEmail = FirebaseAuth.getInstance().getUserByEmail(request.getEmail());
-//            String authToken = firebaseAuthService.generateAuthToken(request.getEmail(), request.getPassword());
-//
-//
-//            return ResponseEntity.ok(new LoginResponse(userByEmail.getUid(),
-//                    userByEmail.getEmail(),
-//                    userByEmail.getDisplayName(),
-//                    authToken));
-//
-//        } catch (FirebaseAuthException e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-//        }

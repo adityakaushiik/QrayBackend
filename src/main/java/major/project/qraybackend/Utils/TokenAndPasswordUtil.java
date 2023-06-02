@@ -28,15 +28,14 @@ public class TokenAndPasswordUtil {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        token = token.replace("Bearer ", "");
-        Claims claims = Jwts.parser()
-                .setSigningKey(secretKey.getBytes())
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
     }
+
+    public boolean verifyPassword(String password, String encodedPassword) {
+        return passwordEncoder.matches(password, encodedPassword);
+    }
+
 
     public boolean validateToken(String token) {
         token = token.replace("Bearer ", "");
@@ -48,11 +47,36 @@ public class TokenAndPasswordUtil {
         }
     }
 
-    public String encodePassword(String password) {
-        return passwordEncoder.encode(password);
+    public String generateToken(String qrLinkId, String userID) {
+        Key key = new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+
+        return Jwts.builder()
+                .claim("userID", userID) // Include the email as a claim
+                .setSubject(qrLinkId)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000 * 4)) // Token expires in 4 days
+                .signWith(SignatureAlgorithm.HS256, key)
+                .compact();
     }
 
-    public boolean verifyPassword(String password, String encodedPassword) {
-        return passwordEncoder.matches(password, encodedPassword);
+    public String getSubjectFromToken(String token) {
+        token = token.replace("Bearer ", "");
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey.getBytes())
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getSubject();
+    }
+
+    public String getClaimFromToken(String token) {
+        token = token.replace("Bearer ", "");
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey.getBytes())
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userID", String.class);
     }
 }
+//
