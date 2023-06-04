@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -21,6 +22,8 @@ public class QrLinkService {
     private Firestore firestore;
     @Autowired
     private TokenAndPasswordUtil tokenAndPasswordUtil;
+    @Autowired
+    private DocumentService documentService;
 
     private CollectionReference getUserCollection() {
         return firestore.collection("users");
@@ -31,6 +34,7 @@ public class QrLinkService {
                                String sessionName,
                                int time,
                                String[] documentIds) throws ExecutionException, InterruptedException {
+
         ApiFuture<DocumentReference> qr = getUserCollection().document(uid).collection("qr-link").add(Map.of(
                 "creationDate", LocalDateTime.now().toString(),
                 "documentIds", Arrays.stream(documentIds).toList(),
@@ -43,18 +47,54 @@ public class QrLinkService {
     }
 
     public ResponseEntity<Map<String, Object>> accessQrLink(String token, QrLinkAccessRequest qrLinkAccessRequest) throws ExecutionException, InterruptedException {
-        if (tokenAndPasswordUtil.validateToken(token)) {
+        if (!tokenAndPasswordUtil.validateToken(token))
+            return new ResponseEntity<>(null, null, HttpStatus.UNAUTHORIZED);
 
-            var qrData = getUserCollection().document(tokenAndPasswordUtil.getClaimFromToken(token)).collection("qr-link")
-                    .document(tokenAndPasswordUtil.getSubjectFromToken(token)).get().get().getData();
+        var userId = tokenAndPasswordUtil.getClaimFromToken(token);
+        var qrId = tokenAndPasswordUtil.getSubjectFromToken(token);
 
-            return new ResponseEntity<>(qrData, null, HttpStatus.OK);
-        }
-        //set device accessing
+        var qrDocRef = getUserCollection().document(userId).collection("qr-link").document(qrId);
+
+        if (qrDocRef.get().get().getData().get("sessionValidTime").toString().compareTo(LocalDateTime.now().toString()) < 0)
+            return new ResponseEntity<>(Map.of("message", "Session Has Expired"), null, HttpStatus.UNAUTHORIZED);
+
         //set last seen
-        //check session validity date
-        return new ResponseEntity<>(null, null, HttpStatus.UNAUTHORIZED);
+        qrDocRef.update("lastSeen", LocalDateTime.now().toString());
+
+
+        //update Device List
+        List<Object> deviceData = (List<Object>) qrDocRef.get().get().getData().get("deviceList");
+        if (deviceData != null)
+            for (Object device : deviceData) //check if device already exists
+                if (device.equals(qrLinkAccessRequest)) {
+                    return new ResponseEntity<>(Map.of("message", "Device Already Exists"), null, HttpStatus.UNAUTHORIZED);
+                } else {
+                    qrDocRef.update("deviceList", FieldValue.arrayUnion(qrLinkAccessRequest));
+                    break;
+                }
+        else
+            qrDocRef.update("deviceList", FieldValue.arrayUnion(qrLinkAccessRequest));
+
+
+        var qrData = qrDocRef.get().get().getData();
+        var finalData = getUserCollection().document(userId).get().get().getData();
+
+        List<Object> documentUrls = new ArrayList<>();
+        List<String> documents = (List<String>) qrData.get("documentIds");
+        for (var document : documents) {
+            var ref = getUserCollection().document(userId).collection("Documents").document(document).get().get().getData();
+            var url = documentService.downloadDocument(ref.get("documentReference").toString());
+            ref.put("documentUrl", url);
+            documentUrls.add(ref);
+        }
+
+
+        finalData.remove("password");
+        finalData.put("documents", documentUrls);
+
+        return new ResponseEntity<>(finalData, null, HttpStatus.OK);
     }
+
 
     public ArrayList<Object> getQrLinks(String uid) throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> querySnapshotApiFuture = getUserCollection().document(uid)
@@ -77,4 +117,6 @@ public class QrLinkService {
     public void deleteQrLink() {
         //delete qr link
     }
+
+
 }

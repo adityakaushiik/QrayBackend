@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutionException;
 @RestController
 @RequestMapping("api/qrLink/")
 public class QrLinkController {
-
     @Autowired
     private QrLinkService qrLinkService;
 
@@ -23,9 +22,10 @@ public class QrLinkController {
     public ResponseEntity<String> createQrLink(HttpServletRequest request,
                                                @RequestParam("type") String type,
                                                @RequestParam("sessionName") String sessionName,
-                                               @RequestParam(value = "validTime", required = false)
-                                               int time,
-                                               @RequestBody String[] documentIds) throws ExecutionException, InterruptedException {
+                                               @RequestParam(value = "validTime", required = false) int time,
+                                               @RequestBody String[] documentIds)
+            throws ExecutionException, InterruptedException {
+
         String qrLink = qrLinkService.createQrLink(
                 request.getAttribute("uid").toString(),
                 type,
@@ -38,13 +38,18 @@ public class QrLinkController {
 
     @PostMapping("/access")
     public ResponseEntity<Map<String, Object>> accessQrLink(@RequestBody QrLinkAccessRequest qrLinkAccessRequest,
-                                                            @RequestParam("token") String token) throws ExecutionException, InterruptedException {
+                                                            @RequestParam("token") String token)
+            throws ExecutionException, InterruptedException {
+
+        System.out.println(qrLinkAccessRequest.get_ipAddress());
         return qrLinkService.accessQrLink(token, qrLinkAccessRequest);
     }
 
 
     @GetMapping("/get")
-    public ResponseEntity<ArrayList<Object>> getQrLink(HttpServletRequest request) throws ExecutionException, InterruptedException {
+    public ResponseEntity<ArrayList<Object>> getQrLink(HttpServletRequest request)
+            throws ExecutionException, InterruptedException {
+
         ArrayList<Object> data = qrLinkService.getQrLinks(request.getAttribute("uid").toString());
         return ResponseEntity.ok(data);
     }
