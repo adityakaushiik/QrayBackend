@@ -19,7 +19,7 @@ public class QrLinkController {
     private QrLinkService qrLinkService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createQrLink(HttpServletRequest request,
+    public ResponseEntity<Object> createQrLink(HttpServletRequest request,
                                                @RequestParam("type") String type,
                                                @RequestParam("sessionName") String sessionName,
                                                @RequestParam(value = "validTime", required = false) int time,
@@ -32,7 +32,7 @@ public class QrLinkController {
                 sessionName,
                 time,
                 documentIds);
-        return ResponseEntity.ok(qrLink);
+        return ResponseEntity.ok(Map.of("token", qrLink));
     }
 
 
@@ -52,5 +52,15 @@ public class QrLinkController {
 
         ArrayList<Object> data = qrLinkService.getQrLinks(request.getAttribute("uid").toString());
         return ResponseEntity.ok(data);
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Object> deleteQrLink(HttpServletRequest request,
+                                               @RequestParam("qrId") String qrId)
+            throws ExecutionException, InterruptedException {
+
+        var write = qrLinkService.deleteQrLink(request.getAttribute("uid").toString(), qrId);
+        return ResponseEntity.ok(Map.of("message", "Deleted",
+                "write", write.get().getUpdateTime().toString()));
     }
 }

@@ -111,7 +111,7 @@ public class QrLinkService {
         //update qr link
     }
 
-    public void deleteQrLink() {
-        //delete qr link
+    public ApiFuture<WriteResult> deleteQrLink(String uid, String qrId) throws ExecutionException, InterruptedException {
+        return getUserCollection().document(uid).collection("qr-link").document(qrId).delete();
     }
 }
