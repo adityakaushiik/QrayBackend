@@ -41,7 +41,7 @@ public class QrLinkController {
                                                             @RequestParam("token") String token)
             throws ExecutionException, InterruptedException {
 
-        System.out.println(qrLinkAccessRequest.get_ipAddress());
+        System.out.println(qrLinkAccessRequest.getIpAddress());
         return qrLinkService.accessQrLink(token, qrLinkAccessRequest);
     }
 

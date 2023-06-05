@@ -6,11 +6,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class QrLinkAccessRequest {
-    String _deviceType;
-    String _ipAddress;
-    int _screenHeight;
-    int _screenWidth;
-    String _userAgent;
+    String deviceType;
+    String ipAddress;
+    int screenHeight;
+    int screenWidth;
+    String userAgent;
 }
 
 
