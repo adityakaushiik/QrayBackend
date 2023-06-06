@@ -38,7 +38,7 @@ public class AttendanceController {
                 "writeResult", deleted)
         );
     }
-    
+
     //mark attendance
     @PostMapping("/mark")
     public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
@@ -66,7 +66,7 @@ public class AttendanceController {
                                                    @RequestParam("attendanceId") String attendanceId,
                                                    @RequestParam("recordId") String recordId) {
         attendanceService.removeAttendance(request.getAttribute("uid").toString(), attendanceId, recordId);
-        return ResponseEntity.ok("Removed Successfully");
+        return ResponseEntity.ok(Map.of("message", "Removed Successfully"));
     }
 
     //get attendance by date

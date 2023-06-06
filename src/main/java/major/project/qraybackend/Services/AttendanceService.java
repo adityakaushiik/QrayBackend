@@ -1,10 +1,7 @@
 package major.project.qraybackend.Services;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.*;
 import major.project.qraybackend.Models.MarkAttendance;
 import major.project.qraybackend.Models.SaveAttendance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,41 +15,128 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+//@Service
+//public class AttendanceService {
+//    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//    @Autowired
+//    private Firestore firestore;
+//
+//    private CollectionReference getCollection() {
+//        return firestore.collection("users");
+//    }
+//
+//
+//    //create attendance
+//    public String createAttendance(String userId) throws ExecutionException, InterruptedException {
+//        Map<String, Object> attendance = new HashMap<>();
+//        attendance.put("creationDate", LocalDateTime.now().format(formatter));
+//        attendance.put("name", "Attendance");
+//
+//
+//        ApiFuture<DocumentReference> attendanceRecord =
+//                getCollection().document(userId).collection("attendance").add(attendance);
+//
+//        return attendanceRecord.get().getId();
+//    }
+//
+//    //delete attendance
+//    public boolean deleteAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
+//        ApiFuture<WriteResult> deleting = getCollection().document(userId).collection("attendance")
+//                .document(attendanceId).delete();
+//
+//        return deleting.isDone();
+//    }
+//
+//    //mark attendance
+//    public boolean markAttendance(String userId, MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
+////        String info = LocalDateTime.now().format(formatter) + "||" + markAttendance.getDisplayName() + "||" + markAttendance.getEmail();
+//        SaveAttendance saveAttendance = new SaveAttendance(
+//                markAttendance.getAttendersId(),
+//                markAttendance.getDisplayName(),
+//                markAttendance.getEmail(),
+//                LocalDateTime.now().format(formatter)
+//        );
+//
+//        ApiFuture<DocumentReference> add = getCollection().document(userId).collection("attendance")
+//                .document(markAttendance.getAttendanceId()).collection("attenders").add(saveAttendance);
+//
+//        return add.isDone();
+//    }
+//
+//
+//    //get attendance
+//    public List<Map<String, Object>> getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
+//        List<Map<String, Object>> attendanceList = new ArrayList<>();
+//
+//        if (attendanceId == null || attendanceId.equals("0")) {
+//            CollectionReference collectionReference = getCollection().document(userId).collection("attendance");
+//
+//            for (var item : collectionReference.get().get().getDocuments()) {
+//                var itemData = item.getData();
+//                itemData.put("id", item.getId());
+//                var attendersTotal = item.getReference().collection("attenders").get().get().size();
+//                itemData.put("totalAttenders", attendersTotal);
+//
+//                attendanceList.add(itemData);
+//            }
+//        } else {
+//            getCollection().document(userId).collection("attendance")
+//                    .document(attendanceId).get().get()
+//                    .getReference()
+//                    .collection("attenders").get().get()
+//                    .getDocuments()
+//                    .forEach(item -> {
+//                        var itemData = item.getData();
+//                        itemData.put("recordId", item.getId());
+//                        attendanceList.add(itemData);
+//                    });
+//        }
+//        return attendanceList;
+//    }
+//
+//    //remove attendance
+//    public boolean removeAttendance(String userId, String attendanceId, String recordId) {
+//        ApiFuture<WriteResult> removing = getCollection().document(userId).collection("attendance")
+//                .document(attendanceId)
+//                .collection("attenders").document(recordId).delete();
+//        return removing.isDone();
+//    }
+//
+//    //get attendance by date
+//    //get attendance by user
+//    //get attendance by user and date
+//}
+
 @Service
 public class AttendanceService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     @Autowired
     private Firestore firestore;
 
-    private CollectionReference getCollection() {
-        return firestore.collection("users");
+    private CollectionReference getCollection(String userId) {
+        return firestore.collection("users").document(userId).collection("attendance");
     }
 
-
-    //create attendance
+    // Create attendance
     public String createAttendance(String userId) throws ExecutionException, InterruptedException {
         Map<String, Object> attendance = new HashMap<>();
         attendance.put("creationDate", LocalDateTime.now().format(formatter));
         attendance.put("name", "Attendance");
 
+        DocumentReference attendanceRecord = getCollection(userId).add(attendance).get();
 
-        ApiFuture<DocumentReference> attendanceRecord =
-                getCollection().document(userId).collection("attendance").add(attendance);
-
-        return attendanceRecord.get().getId();
+        return attendanceRecord.getId();
     }
 
-    //delete attendance
-    public boolean deleteAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
-        ApiFuture<WriteResult> deleting = getCollection().document(userId).collection("attendance")
-                .document(attendanceId).delete();
+    // Delete attendance
+    public boolean deleteAttendance(String userId, String attendanceId) {
+        ApiFuture<WriteResult> deleting = getCollection(userId).document(attendanceId).delete();
 
         return deleting.isDone();
     }
 
-    //mark attendance
-    public boolean markAttendance(String userId, MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
-//        String info = LocalDateTime.now().format(formatter) + "||" + markAttendance.getDisplayName() + "||" + markAttendance.getEmail();
+    // Mark attendance
+    public boolean markAttendance(String userId, MarkAttendance markAttendance) {
         SaveAttendance saveAttendance = new SaveAttendance(
                 markAttendance.getAttendersId(),
                 markAttendance.getDisplayName(),
@@ -60,46 +144,66 @@ public class AttendanceService {
                 LocalDateTime.now().format(formatter)
         );
 
-        ApiFuture<DocumentReference> add = getCollection().document(userId).collection("attendance")
-                .document(markAttendance.getAttendanceId()).collection("attenders").add(saveAttendance);
+        ApiFuture<DocumentReference> add = getCollection(userId)
+                .document(markAttendance.getAttendanceId())
+                .collection("attenders")
+                .add(saveAttendance);
 
         return add.isDone();
     }
 
-
-    //get attendance
+    // Get attendance
     public List<Map<String, Object>> getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
         List<Map<String, Object>> attendanceList = new ArrayList<>();
 
         if (attendanceId == null || attendanceId.equals("0")) {
-            CollectionReference collectionReference = getCollection().document(userId).collection("attendance");
-
-            for (var item : collectionReference.get().get().getDocuments()) {
-                var itemData = item.getData();
+            QuerySnapshot attendanceSnapshot = getCollection(userId).get().get();
+            for (DocumentSnapshot item : attendanceSnapshot.getDocuments()) {
+                Map<String, Object> itemData = item.getData();
                 itemData.put("id", item.getId());
-                var attendersTotal = item.getReference().collection("attenders").get().get().size();
+
+                CollectionReference attendersCollection = item.getReference().collection("attenders");
+                int attendersTotal = attendersCollection.get().get().size();
                 itemData.put("totalAttenders", attendersTotal);
 
                 attendanceList.add(itemData);
             }
         } else {
-            getCollection().document(userId).collection("attendance")
-                    .document(attendanceId).get().get()
-                    .getReference()
-                    .collection("attenders").get().get()
-                    .getDocuments()
-                    .forEach(item -> {
-                        var itemData = item.getData();
-                        itemData.put("recordId", item.getId());
-                        attendanceList.add(itemData);
-                    });
+            CollectionReference attendersCollection = getCollection(userId)
+                    .document(attendanceId)
+                    .collection("attenders");
+
+            QuerySnapshot attendersSnapshot = attendersCollection.get().get();
+            for (DocumentSnapshot item : attendersSnapshot.getDocuments()) {
+                Map<String, Object> itemData = item.getData();
+                itemData.put("recordId", item.getId());
+                attendanceList.add(itemData);
+            }
         }
+
         return attendanceList;
     }
 
+    // Remove attendance
+    public boolean removeAttendance(String userId, String attendanceId, String recordId) {
+        ApiFuture<WriteResult> removing = getCollection(userId)
+                .document(attendanceId)
+                .collection("attenders")
+                .document(recordId)
+                .delete();
 
-    //you dont actually need to send the entire data , just send the info and the size of the attenders collection
-    // according to that you can get a request for the attenders then you can print all the data in it
+        return removing.isDone();
+    }
+
+    // Get attendance by date
+    // Get attendance by user
+    // Get attendance by user and date
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//you dont actually need to send the entire data , just send the info and the size of the attenders collection
+// according to that you can get a request for the attenders then you can print all the data in it
 //    public List<Map<String, Object>> getAttendance(String userId, String attendanceId) {
 //        List<Map<String, Object>> attendanceList = new ArrayList<>();
 //
@@ -168,7 +272,7 @@ public class AttendanceService {
 //        return attendanceList;
 //    }
 
-    //get attendance
+//get attendance
 //    public List<Map<String, Object>> getAttendance(String userId, String attendanceId) throws ExecutionException, InterruptedException {
 //        List<Map<String, Object>> attendanceList = new ArrayList<>();
 //
@@ -195,16 +299,3 @@ public class AttendanceService {
 //
 //        return attendanceList;
 //    }
-
-    //remove attendance
-    public boolean removeAttendance(String userId, String attendanceId, String recordId) {
-        ApiFuture<WriteResult> removing = getCollection().document(userId).collection("attendance")
-                .document(attendanceId)
-                .collection("attenders").document(recordId).delete();
-        return removing.isDone();
-    }
-
-    //get attendance by date
-    //get attendance by user
-    //get attendance by user and date
-}

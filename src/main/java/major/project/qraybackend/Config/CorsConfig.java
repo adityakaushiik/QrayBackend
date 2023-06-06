@@ -19,6 +19,7 @@ public class CorsConfig implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
 
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200"); // Replace with your frontend URL
+        response.setHeader("Access-Control-Allow-Origin", "https://q-ray-78930.web.app"); // Replace with your frontend URL
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
         response.setHeader("Access-Control-Max-Age", "3600");
