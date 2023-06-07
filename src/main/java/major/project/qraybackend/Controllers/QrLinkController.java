@@ -107,6 +107,7 @@ public class QrLinkController {
             ArrayList<Object> data = qrLinkService.getQrLinks(request.getAttribute("uid").toString());
             return ResponseEntity.ok(data);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

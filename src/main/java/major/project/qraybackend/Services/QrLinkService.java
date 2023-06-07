@@ -266,27 +266,37 @@ public class QrLinkService {
             ApiFuture<QuerySnapshot> querySnapshotApiFuture = getUserCollection().document(uid)
                     .collection("qr-link").get();
 
-            var list = new ArrayList<>();
+            ArrayList<Object> list = new ArrayList<>();
             for (DocumentSnapshot documentSnapshot : querySnapshotApiFuture.get().getDocuments()) {
                 Map<String, Object> data = documentSnapshot.getData();
-
-                List<Object> documentList = new ArrayList<>();
-                for (var doc : (List<String>) data.get("documentIds")) {
-                    var docData = getUserCollection().document(uid).collection("Documents").document(doc).get()
-                            .get().getData();
-                    docData.put("id", doc);
-                    documentList.add(docData);
-                }
+                List<Object> documentList = retrieveDocumentList(uid, data);
 
                 data.put("documents", documentList);
                 data.put("id", documentSnapshot.getId());
                 list.add(data);
             }
             return list;
-        } catch (Exception e) {
-            throw e;
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
+        return new ArrayList<>();
     }
+
+    private List<Object> retrieveDocumentList(String uid, Map<String, Object> qrData) throws ExecutionException, InterruptedException {
+        List<Object> documentList = new ArrayList<>();
+        for (String doc : (List<String>) qrData.get("documentIds")) {
+            DocumentSnapshot docSnapshot = getUserCollection().document(uid).collection("Documents").document(doc).get().get();
+            if (docSnapshot.exists()) {
+                Map<String, Object> docData = docSnapshot.getData();
+                if (docData != null) {
+                    docData.put("id", doc);
+                    documentList.add(docData);
+                }
+            }
+        }
+        return documentList;
+    }
+
 
     public ApiFuture<WriteResult> deleteQrLink(String uid, String qrId)
             throws ExecutionException, InterruptedException {
