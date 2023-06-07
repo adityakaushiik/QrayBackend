@@ -20,4 +20,5 @@ public class UserBasicData {
 //    String collegeEnrollmentNumber;
 //    String fathersName;
 //    String mothersName;
+    //address
 }

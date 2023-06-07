@@ -293,21 +293,79 @@ public class QrLinkService {
         return getUserCollection().document(uid).collection("qr-link").document(qrId).delete();
     }
 
-    public ResponseEntity<Map<String, Object>> accessQrLink(String token, QrLinkAccessRequest qrLinkAccessRequest) throws ExecutionException, InterruptedException {
+//    public ResponseEntity<Map<String, Object>> accessQrLink(String token, QrLinkAccessRequest qrLinkAccessRequest) throws ExecutionException, InterruptedException {
+//        try {
+//            if (!tokenAndPasswordUtil.validateToken(token))
+//                return new ResponseEntity<>(null, null, HttpStatus.UNAUTHORIZED);
+//
+//            var userId = tokenAndPasswordUtil.getClaimFromToken(token);
+//            var qrId = tokenAndPasswordUtil.getSubjectFromToken(token);
+//
+//            var qrDocRef = getUserCollection().document(userId).collection("qr-link").document(qrId);
+//
+//            DocumentSnapshot qrDocumentSnapshot = qrDocRef.get().get();
+//            Map<String, Object> qrData = qrDocumentSnapshot.getData();
+//
+//            if (qrData.get("sessionValidTime").toString().compareTo(LocalDateTime.now().toString()) < 0)
+//                return new ResponseEntity<>(Map.of("message", "Session Has Expired"), null, HttpStatus.UNAUTHORIZED);
+//
+//            // Set last seen
+//            qrDocRef.update("lastSeen", LocalDateTime.now().toString());
+//
+//            // Update Device List
+//            List<Object> deviceData = (List<Object>) qrData.get("deviceList");
+//            if (deviceData != null && deviceData.contains(qrLinkAccessRequest)) {
+//                return new ResponseEntity<>(Map.of("message", "Device Already Exists"), null, HttpStatus.UNAUTHORIZED);
+//            } else {
+//                qrDocRef.update("deviceList", FieldValue.arrayUnion(qrLinkAccessRequest));
+//            }
+//
+//            var batch = firestore.batch();
+//            List<Object> documentIdsList = (List<Object>) qrData.get("documentIds");
+//            String[] documents = documentIdsList.toArray(new String[0]);
+//            for (var document : documents) {
+//                var ref = getUserCollection().document(userId).collection("Documents").document(document);
+//                batch.update(ref, "documentUrl", documentService.downloadDocument(ref.get().get().getData().get("documentReference").toString()));
+//            }
+//            batch.commit().get(); // Wait for the batched writes to complete
+//
+//            var finalData = getUserCollection().document(userId).get().get().getData();
+//            List<Object> documentUrls = fetchDocumentUrls(qrData, userId);
+//            finalData.remove("password");
+//            finalData.put("documents", documentUrls);
+//            return new ResponseEntity<>(finalData, null, HttpStatus.OK);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+
+    public ResponseEntity<Map<String, Object>> accessQrLink(String token, QrLinkAccessRequest qrLinkAccessRequest)
+            throws ExecutionException, InterruptedException {
         try {
+            System.out.println(qrLinkAccessRequest.getDeviceType());
             if (!tokenAndPasswordUtil.validateToken(token))
-                return new ResponseEntity<>(null, null, HttpStatus.UNAUTHORIZED);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-            var userId = tokenAndPasswordUtil.getClaimFromToken(token);
-            var qrId = tokenAndPasswordUtil.getSubjectFromToken(token);
+            String userId = tokenAndPasswordUtil.getClaimFromToken(token);
+            String qrId = tokenAndPasswordUtil.getSubjectFromToken(token);
 
-            var qrDocRef = getUserCollection().document(userId).collection("qr-link").document(qrId);
+            DocumentReference qrDocRef = getUserCollection()
+                    .document(userId)
+                    .collection("qr-link")
+                    .document(qrId);
 
             DocumentSnapshot qrDocumentSnapshot = qrDocRef.get().get();
             Map<String, Object> qrData = qrDocumentSnapshot.getData();
 
+            if (qrData == null || qrData.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "QR Link Not Found"));
+            }
+
             if (qrData.get("sessionValidTime").toString().compareTo(LocalDateTime.now().toString()) < 0)
-                return new ResponseEntity<>(Map.of("message", "Session Has Expired"), null, HttpStatus.UNAUTHORIZED);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Session Has Expired"));
 
             // Set last seen
             qrDocRef.update("lastSeen", LocalDateTime.now().toString());
@@ -315,41 +373,42 @@ public class QrLinkService {
             // Update Device List
             List<Object> deviceData = (List<Object>) qrData.get("deviceList");
             if (deviceData != null && deviceData.contains(qrLinkAccessRequest)) {
-                return new ResponseEntity<>(Map.of("message", "Device Already Exists"), null, HttpStatus.UNAUTHORIZED);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Device Already Exists"));
             } else {
                 qrDocRef.update("deviceList", FieldValue.arrayUnion(qrLinkAccessRequest));
             }
 
-            var batch = firestore.batch();
-            String[] documents = (String[]) qrData.get("documentIds");
-            for (var document : documents) {
-                var ref = getUserCollection().document(userId).collection("Documents").document(document);
-                batch.update(ref, "documentUrl", documentService.downloadDocument(ref.get().get().getData().get("documentReference").toString()));
-            }
-            batch.commit().get(); // Wait for the batched writes to complete
+            Map<String, Object> finalData = getUserCollection()
+                    .document(userId)
+                    .get().get().getData();
 
-            var finalData = getUserCollection().document(userId).get().get().getData();
             List<Object> documentUrls = fetchDocumentUrls(qrData, userId);
+
             finalData.remove("password");
             finalData.put("documents", documentUrls);
-            return new ResponseEntity<>(finalData, null, HttpStatus.OK);
+            return ResponseEntity.ok(finalData);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>(null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     private List<Object> fetchDocumentUrls(Map<String, Object> qrData, String userId) throws ExecutionException, InterruptedException {
         List<Object> documentUrls = new ArrayList<>();
-        String[] documents = (String[]) qrData.get("documentIds");
-        for (var document : documents) {
-            var ref = getUserCollection().document(userId).collection("Documents").document(document).get().get().getData();
-            var url = documentService.downloadDocument(ref.get("documentReference").toString());
-            ref.put("documentUrl", url);
-            documentUrls.add(ref);
+        List<String> documents = (List<String>) qrData.get("documentIds");
+        for (String document : documents) {
+            var docData = getUserCollection().document(userId).collection("Documents").document(document).get().get().getData();
+            if (docData != null) {
+                String documentReference = docData.get("documentReference").toString();
+                String documentUrl = String.valueOf(documentService.downloadDocument(documentReference));
+                docData.put("documentUrl", documentUrl);
+                documentUrls.add(docData);
+            }
         }
         return documentUrls;
     }
+
 
     // Rest of the code...
 }
