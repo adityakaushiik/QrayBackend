@@ -49,6 +49,10 @@ public class AttendanceController {
     public ResponseEntity<Map<String, Object>> markAttendance(@RequestParam("uid") String uid,
                                                               @RequestBody MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
         var attendance = attendanceService.markAttendance(uid, markAttendance);
+        if (attendance == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Attendance not found"));
+        }
         return ResponseEntity.ok(Map.of(
                 "message", "Marked Successfully"));
     }

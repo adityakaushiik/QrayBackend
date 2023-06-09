@@ -144,7 +144,9 @@ public class AttendanceService {
                 markAttendance.getEmail(),
                 LocalDateTime.now().format(formatter)
         );
-
+        if (getCollection(userId).document(markAttendance.getAttendanceId()).get().get().getData() == null) {
+            return null;
+        }
         ApiFuture<DocumentReference> add = getCollection(userId)
                 .document(markAttendance.getAttendanceId())
                 .collection("attenders")
