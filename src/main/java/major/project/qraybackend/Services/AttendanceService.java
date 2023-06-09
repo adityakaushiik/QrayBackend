@@ -1,5 +1,6 @@
 package major.project.qraybackend.Services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import major.project.qraybackend.Models.MarkAttendance;
@@ -136,7 +137,7 @@ public class AttendanceService {
     }
 
     // Mark attendance
-    public boolean markAttendance(String userId, MarkAttendance markAttendance) {
+    public Map markAttendance(String userId, MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
         SaveAttendance saveAttendance = new SaveAttendance(
                 markAttendance.getAttendersId(),
                 markAttendance.getDisplayName(),
@@ -149,7 +150,10 @@ public class AttendanceService {
                 .collection("attenders")
                 .add(saveAttendance);
 
-        return add.isDone();
+        var attendance = new ObjectMapper().convertValue(saveAttendance, Map.class);
+        attendance.put("id", add.get().getId());
+
+        return attendance;
     }
 
     // Get attendance

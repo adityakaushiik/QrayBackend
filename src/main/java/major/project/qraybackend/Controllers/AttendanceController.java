@@ -15,8 +15,13 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("api/attendance/")
 //@CrossOrigin
 public class AttendanceController {
+    //    private final SimpMessagingTemplate messagingTemplate;
     @Autowired
     private AttendanceService attendanceService;
+
+//    public AttendanceController(SimpMessagingTemplate messagingTemplate) {
+//        this.messagingTemplate = messagingTemplate;
+//    }
 
     //create attendance
     @GetMapping("/create")
@@ -41,13 +46,11 @@ public class AttendanceController {
 
     //mark attendance
     @PostMapping("/mark")
-    public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
+    public ResponseEntity<Map<String, Object>> markAttendance(@RequestParam("uid") String uid,
                                                               @RequestBody MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
-        boolean marked = attendanceService.markAttendance(request.getAttribute("uid").toString(), markAttendance);
-
+        var attendance = attendanceService.markAttendance(uid, markAttendance);
         return ResponseEntity.ok(Map.of(
-                "message", "Marked Successfully",
-                "writeResult", marked));
+                "message", "Marked Successfully"));
     }
 
     //get attendance
