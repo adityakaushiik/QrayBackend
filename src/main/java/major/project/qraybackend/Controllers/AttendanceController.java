@@ -46,7 +46,8 @@ public class AttendanceController {
 
     //mark attendance
     @PostMapping("/mark")
-    public ResponseEntity<Map<String, Object>> markAttendance(@RequestParam("uid") String uid,
+    public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
+                                                              @RequestParam("uid") String uid,
                                                               @RequestBody MarkAttendance markAttendance) throws ExecutionException, InterruptedException {
         var attendance = attendanceService.markAttendance(uid, markAttendance);
         if (attendance == null) {
