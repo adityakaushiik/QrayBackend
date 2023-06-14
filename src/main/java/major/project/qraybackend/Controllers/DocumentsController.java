@@ -49,7 +49,7 @@ public class DocumentsController {
         return ResponseEntity.ok(documentService.downloadDocument(documentReference));
     }
 
-    @DeleteMapping(value = "/delete/")
+    @DeleteMapping(value = "/delete")
     public ResponseEntity<String> deleteDocument(HttpServletRequest request,
                                                  @RequestParam("documentId") String documentId,
                                                  @RequestParam("documentReference") String documentReference) {
@@ -60,7 +60,7 @@ public class DocumentsController {
         return ResponseEntity.ok("Error , Document not deleted");
     }
 
-    @PutMapping(value = "/update/")
+    @PostMapping(value = "/update/")
     public ResponseEntity<String> updateDocument(@RequestPart("documentReference") String documentReference, @RequestPart("document") @ApiParam(value = "File", required = true) MultipartFile document) {
         documentService.updateDocument(documentReference, document);
         return ResponseEntity.ok("Document Updated");

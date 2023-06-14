@@ -248,6 +248,7 @@ public class QrLinkService {
     public String createQrLink(String uid, String type, String sessionName, int time, String[] documentIds)
             throws ExecutionException, InterruptedException {
 
+
         ApiFuture<DocumentReference> qr = getUserCollection().document(uid)
                 .collection("qr-link")
                 .add(Map.of(
@@ -257,7 +258,10 @@ public class QrLinkService {
                         "sessionName", sessionName,
                         "sessionValidTime", LocalDateTime.now().plusMinutes(60L * time).toString()));
 
-        return tokenAndPasswordUtil.generateToken(qr.get().getId(), uid);
+        String token = tokenAndPasswordUtil.generateToken(qr.get().getId(), uid);
+        var ref = qr.get();
+        ref.update("token", token);
+        return token;
     }
 
 
