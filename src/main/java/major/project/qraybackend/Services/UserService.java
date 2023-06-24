@@ -170,12 +170,7 @@ public class UserService {
             if (tokenAndPasswordUtil.verifyPassword(request.getPassword(), userBasicData.getPassword())) {
                 final String token = tokenAndPasswordUtil.generateToken(userDetails.getUid());
 
-                LoginResponse loginResponse = new LoginResponse(
-                        userDetails.getUid(),
-                        userDetails.getEmail(),
-                        userDetails.getDisplayName(),
-                        token
-                );
+                LoginResponse loginResponse = new LoginResponse(userDetails.getUid(), userDetails.getEmail(), userDetails.getDisplayName(), token);
 
                 return ResponseEntity.ok(loginResponse);
             } else {
@@ -191,20 +186,17 @@ public class UserService {
     public ApiFuture<WriteResult> addUserData(UserBasicData userData) throws FirebaseAuthException {
         userData.setPassword(tokenAndPasswordUtil.encodePassword(userData.getPassword()));
 
-        UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                .setEmail(userData.getEmail())
-                .setEmailVerified(false)
-                .setPassword(userData.getPassword())
-                .setDisplayName(userData.getFirstName() + " " + userData.getLastName())
-                .setDisabled(false);
+        UserRecord.CreateRequest request = new UserRecord.CreateRequest().setEmail(userData.getEmail()).setEmailVerified(false).setPassword(userData.getPassword()).setDisplayName(userData.getFirstName() + " " + userData.getLastName()).setDisabled(false);
 
         UserRecord userRecord = firebaseAuth.createUser(request);
         return getUserCollection().document(userRecord.getUid()).set(userData);
     }
 
-    public Object userBasicDataWithoutPassword(String uid) {
+    public Object userBasicDataWithoutPassword(String uid, String userId) {
         try {
-            Map<String, Object> userDataMap = getUserDataMap(uid);
+            Map<String, Object> userDataMap;
+            if (userId == null || userId.equals("0")) userDataMap = getUserDataMap(uid);
+            else userDataMap = getUserDataMap(userId);
             userDataMap.remove("password");
             return userDataMap;
         } catch (ExecutionException | InterruptedException e) {

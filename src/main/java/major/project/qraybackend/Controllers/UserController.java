@@ -46,8 +46,8 @@ public class UserController {
     }
 
     @GetMapping("/userDetails")
-    public ResponseEntity<Object> getUserData(HttpServletRequest request) {
-        return new ResponseEntity<>(userService.userBasicDataWithoutPassword(request.getAttribute("uid").toString()), HttpStatus.OK);
+    public ResponseEntity<Object> getUserData(HttpServletRequest request, @RequestParam(value = "userId", required = false) String userId) {
+        return new ResponseEntity<>(userService.userBasicDataWithoutPassword(request.getAttribute("uid").toString(), userId), HttpStatus.OK);
     }
 
     @PutMapping("/updateUserDetails")
