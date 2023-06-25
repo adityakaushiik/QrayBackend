@@ -55,7 +55,7 @@ public class AttendanceController {
                     "message", "Attendance not found"));
         }
         return ResponseEntity.ok(Map.of(
-                "message", "Marked Successfully"));
+                "message", markAttendance.getDisplayName() + " Marked Successfully"));
     }
 
     //get attendance
