@@ -15,19 +15,15 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("api/attendance/")
 //@CrossOrigin
 public class AttendanceController {
-    //    private final SimpMessagingTemplate messagingTemplate;
+
     @Autowired
     private AttendanceService attendanceService;
 
-//    public AttendanceController(SimpMessagingTemplate messagingTemplate) {
-//        this.messagingTemplate = messagingTemplate;
-//    }
-
     //create attendance
     @GetMapping("/create")
-    public ResponseEntity<Object> createAttendance(HttpServletRequest request)
+    public ResponseEntity<Object> createAttendance(HttpServletRequest request, @RequestParam(value = "name", required = false) String name)
             throws InterruptedException, ExecutionException {
-        String attendanceId = attendanceService.createAttendance(request.getAttribute("uid").toString());
+        String attendanceId = attendanceService.createAttendance(request.getAttribute("uid").toString(), name);
 
         return ResponseEntity.ok(Map.of(
                 "message", "Created Successfully",
