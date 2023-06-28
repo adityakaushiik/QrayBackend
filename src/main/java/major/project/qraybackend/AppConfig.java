@@ -12,6 +12,6 @@ public class AppConfig implements WebMvcConfigurer {
         registry.addInterceptor(new AccessTokenInterceptor())
                 .addPathPatterns("/api/**")
                 .excludePathPatterns("/api/user/login", "/api/user/register",
-                        "/api/qrLink/access", "/socket.io/**");// Apply the interceptor to all paths
+                        "/api/qrLink/access", "/socket.io/**"); // Apply the interceptor to all paths
     }
 }

@@ -13,13 +13,11 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("api/attendance/")
-//@CrossOrigin
 public class AttendanceController {
 
     @Autowired
     private AttendanceService attendanceService;
 
-    //create attendance
     @GetMapping("/create")
     public ResponseEntity<Object> createAttendance(HttpServletRequest request, @RequestParam(value = "name", required = false) String name)
             throws InterruptedException, ExecutionException {
@@ -30,7 +28,6 @@ public class AttendanceController {
                 "attendanceId", attendanceId));
     }
 
-    //delete attendance
     @DeleteMapping("/delete")
     public ResponseEntity<Object> deleteAttendance(HttpServletRequest request, @RequestParam("attendanceId") String attendanceId) throws ExecutionException, InterruptedException {
         boolean deleted = attendanceService.deleteAttendance(request.getAttribute("uid").toString(), attendanceId);
@@ -40,7 +37,6 @@ public class AttendanceController {
         );
     }
 
-    //mark attendance
     @PostMapping("/mark")
     public ResponseEntity<Map<String, Object>> markAttendance(HttpServletRequest request,
                                                               @RequestParam("uid") String uid,
@@ -54,7 +50,6 @@ public class AttendanceController {
                 "message", markAttendance.getDisplayName() + " Marked Successfully"));
     }
 
-    //get attendance
     @GetMapping("/get")
     public ResponseEntity<List<Map<String, Object>>> getAttendance(HttpServletRequest request,
                                                                    @RequestParam(value = "attendanceId", required = false) String attendanceId) throws ExecutionException, InterruptedException {
@@ -64,7 +59,6 @@ public class AttendanceController {
         return ResponseEntity.ok(attendance);
     }
 
-    //remove attendance
     @DeleteMapping("/remove")
     public ResponseEntity<Object> removeAttendance(HttpServletRequest request,
                                                    @RequestParam("attendanceId") String attendanceId,
@@ -72,8 +66,4 @@ public class AttendanceController {
         attendanceService.removeAttendance(request.getAttribute("uid").toString(), attendanceId, recordId);
         return ResponseEntity.ok(Map.of("message", "Removed Successfully"));
     }
-
-    //get attendance by date
-    //get attendance by user
-    //get attendance by user and date
 }

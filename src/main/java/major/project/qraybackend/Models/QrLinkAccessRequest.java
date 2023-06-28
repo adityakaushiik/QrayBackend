@@ -12,7 +12,3 @@ public class QrLinkAccessRequest {
     int screenWidth;
     String userAgent;
 }
-
-
-//one time access
-//guest access

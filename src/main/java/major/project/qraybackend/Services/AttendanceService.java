@@ -110,8 +110,4 @@ public class AttendanceService {
 
         return removing.isDone();
     }
-
-    // Get attendance by date
-    // Get attendance by user
-    // Get attendance by user and date
 }
